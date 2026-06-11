@@ -1,6 +1,9 @@
 <script>
   import { onMount } from 'svelte';
   import * as THREE from 'three';
+  import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+  import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+  import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
   let canvas;
 
@@ -8,39 +11,49 @@
     let w = window.innerWidth;
     let h = window.innerHeight;
 
-    // Scene + Camera
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(52, w / h, 0.1, 100);
-    camera.position.set(0, 3, 20);
+    camera.position.set(0, 2.5, 20);
     camera.lookAt(0, 0, 0);
 
-    // Renderer — transparent so page bg shows through
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    // No alpha — set clear color to match page bg so bloom works
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h);
-    renderer.setClearColor(0x000000, 0);
+    renderer.setClearColor(0x0a0a0a, 1);
+
+    // Bloom post-processing — this is what makes the orb glow
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(w, h),
+      1.8,   // strength
+      0.55,  // radius
+      0.42   // threshold — orb emissive will be well above this
+    );
+    composer.addPass(bloomPass);
 
     // LIGHTS
-    scene.add(new THREE.AmbientLight(0xffffff, 0.10));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
-    keyLight.position.set(-5, 9, 7);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.08));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    keyLight.position.set(-4, 10, 8);
     scene.add(keyLight);
-    const rimLight = new THREE.DirectionalLight(0x818cf8, 0.35);
-    rimLight.position.set(6, -3, -5);
-    scene.add(rimLight);
+    const fillLight = new THREE.DirectionalLight(0x9b9dff, 0.45);
+    fillLight.position.set(5, -2, -5);
+    scene.add(fillLight);
 
     // MESH GRID
-    const SEG = 24;
-    const planeGeo = new THREE.PlaneGeometry(42, 24, SEG, SEG);
+    const SEG = 28;
+    const planeGeo = new THREE.PlaneGeometry(46, 26, SEG, SEG);
     const planeMat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       wireframe: true,
       transparent: true,
-      opacity: 0.058,
+      opacity: 0.062,
     });
     const plane = new THREE.Mesh(planeGeo, planeMat);
     plane.rotation.x = -Math.PI * 0.36;
-    plane.position.set(0, -5, -3);
+    plane.position.set(0, -6, -3);
     scene.add(plane);
 
     const posAttr = planeGeo.attributes.position;
@@ -51,41 +64,44 @@
       origZ[i] = posAttr.getZ(i);
     }
 
-    // MAIN ORB
-    const orbGeo = new THREE.SphereGeometry(2.4, 64, 64);
+    // MAIN ORB — high emissive so bloom picks it up dramatically
+    const orbGeo = new THREE.SphereGeometry(2.5, 64, 64);
     const orbMat = new THREE.MeshStandardMaterial({
-      color: 0x9095f8,
-      emissive: new THREE.Color(0x4338ca),
-      emissiveIntensity: 0.28,
-      roughness: 0.12,
-      metalness: 0.06,
+      color: new THREE.Color(0xd0d4ff),
+      emissive: new THREE.Color(0x4f46e5),
+      emissiveIntensity: 2.4,
+      roughness: 0.04,
+      metalness: 0.0,
     });
     const mainOrb = new THREE.Mesh(orbGeo, orbMat);
-    mainOrb.position.set(0, -0.5, 1.5);
+    mainOrb.position.set(0, -1, 1);
     scene.add(mainOrb);
-    const orbGlow = new THREE.PointLight(0x6366f1, 5, 16);
-    mainOrb.add(orbGlow);
+    const orbLight = new THREE.PointLight(0x6366f1, 7, 20);
+    mainOrb.add(orbLight);
 
     // GRAY SPHERES
     const grayMat = new THREE.MeshStandardMaterial({
-      color: 0xb2b4c4,
-      roughness: 0.22,
-      metalness: 0.04,
+      color: 0xc8cad8,
+      roughness: 0.16,
+      metalness: 0.02,
     });
     const graySphereData = [
-      { p: [-7.8,  2.2, -1.0], r: 1.15 },
-      { p: [-4.8,  5.0, -3.5], r: 0.62 },
-      { p: [ 7.5,  1.8, -2.0], r: 0.95 },
-      { p: [ 5.8,  4.2, -4.5], r: 0.46 },
-      { p: [-11.0, 0.2, -1.5], r: 1.42 },
-      { p: [ 9.8, -0.5, -2.5], r: 0.82 },
-      { p: [ 11.0, 2.8, -4.5], r: 0.40 },
-      { p: [-1.0,  4.0, -0.5], r: 0.30 },
-      { p: [ 2.8, -2.8,  0.5], r: 0.24 },
-      { p: [-5.5, -2.5, -1.0], r: 0.55 },
+      { p: [-7.8,  2.5, -1.0], r: 1.22 },
+      { p: [-4.5,  5.2, -3.5], r: 0.66 },
+      { p: [ 7.5,  2.0, -2.0], r: 1.02 },
+      { p: [ 5.5,  4.5, -4.5], r: 0.50 },
+      { p: [-11.5, 0.5, -1.5], r: 1.50 },
+      { p: [ 10.0,-0.5, -2.5], r: 0.88 },
+      { p: [ 11.5, 3.0, -4.5], r: 0.44 },
+      { p: [-1.2,  4.2, -0.5], r: 0.33 },
+      { p: [ 2.5, -3.2,  0.5], r: 0.27 },
+      { p: [-5.5, -2.5, -1.0], r: 0.60 },
     ];
     const grayMeshes = graySphereData.map(({ p, r }) => {
-      const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 32), grayMat.clone());
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(r, 32, 32),
+        grayMat.clone()
+      );
       mesh.position.set(p[0], p[1], p[2]);
       scene.add(mesh);
       return { mesh, base: [...p] };
@@ -93,35 +109,32 @@
 
     // ANIMATION
     let animId;
-    const startTime = Date.now();
+    const clock = new THREE.Clock();
 
     function animate() {
       animId = requestAnimationFrame(animate);
-      const t = (Date.now() - startTime) * 0.001;
+      const t = clock.getElapsedTime();
 
-      // Wave displacement on mesh vertices
+      // Wave mesh
       for (let i = 0; i < posAttr.count; i++) {
-        const x = origX[i];
-        const z = origZ[i];
-        const y = Math.sin(x * 0.32 + t * 0.52) * 0.52
-                + Math.cos(z * 0.26 + t * 0.40) * 0.38
-                + Math.sin((x + z) * 0.18 + t * 0.35) * 0.24;
+        const x = origX[i], z = origZ[i];
+        const y = Math.sin(x * 0.32 + t * 0.52) * 0.55
+                + Math.cos(z * 0.26 + t * 0.40) * 0.40
+                + Math.sin((x + z) * 0.18 + t * 0.35) * 0.26;
         posAttr.setY(i, y);
       }
       posAttr.needsUpdate = true;
 
-      // Float main orb
-      mainOrb.position.y = -0.5 + Math.sin(t * 0.30) * 0.20;
-      mainOrb.position.x = Math.sin(t * 0.20) * 0.14;
+      mainOrb.position.y = -1 + Math.sin(t * 0.30) * 0.22;
+      mainOrb.position.x = Math.sin(t * 0.20) * 0.15;
 
-      // Float gray spheres
       grayMeshes.forEach(({ mesh, base }, i) => {
         const ph = i * 0.92;
-        mesh.position.x = base[0] + Math.sin(t * 0.26 + ph) * 0.32;
-        mesh.position.y = base[1] + Math.cos(t * 0.21 + ph * 1.3) * 0.26;
+        mesh.position.x = base[0] + Math.sin(t * 0.26 + ph) * 0.35;
+        mesh.position.y = base[1] + Math.cos(t * 0.21 + ph * 1.3) * 0.28;
       });
 
-      renderer.render(scene, camera);
+      composer.render();
     }
     animate();
 
@@ -131,6 +144,8 @@
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      composer.setSize(w, h);
+      bloomPass.setSize(w, h);
     }
     window.addEventListener('resize', onResize);
 
