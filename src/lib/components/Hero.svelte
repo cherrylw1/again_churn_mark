@@ -159,27 +159,133 @@
   <div class="works-with-bar">
     <span class="works-label">WORKS WITH</span>
 
-    <div class="works-brand">
-      <span class="brand-icon hubspot">HS</span>
-      <span class="brand-name">HubSpot</span>
-    </div>
+    <div class="marquee-clip">
+      <div class="marquee-track">
 
-    <div class="works-brand">
-      <span class="brand-icon instantly">I</span>
-      <span class="brand-name">Instantly</span>
-    </div>
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#FF7A59"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="9">HS</text></svg>
+          <span>HubSpot</span>
+        </div>
 
-    <div class="works-brand">
-      <span class="brand-icon apollo">A</span>
-      <span class="brand-name">Apollo</span>
-    </div>
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#FF4A00"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="13">Z</text></svg>
+          <span>Zapier</span>
+        </div>
 
-    <div class="works-brand">
-      <span class="brand-icon smartlead">SL</span>
-      <span class="brand-name">Smartlead</span>
-    </div>
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#0A66C2"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="10">in</text></svg>
+          <span>LinkedIn Ads</span>
+        </div>
 
-    <span class="works-stat">500+ SIGNALS TRACKED</span>
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#0082FB"/><text x="12" y="13" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="400" font-size="16">∞</text></svg>
+          <span>Meta Ads</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="white"/><text x="7" y="12" dominant-baseline="central" fill="#4285F4" font-family="Arial,sans-serif" font-weight="800" font-size="11">G</text><text x="13" y="12" dominant-baseline="central" fill="#EA4335" font-family="Arial,sans-serif" font-weight="800" font-size="11">o</text></svg>
+          <span>Google Ads</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#7C3AED"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="12">A</text></svg>
+          <span>Apollo</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#6D2EFA"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="10">M</text></svg>
+          <span>Make</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#4F6EF7"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="13">I</text></svg>
+          <span>Instantly</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#059669"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="9">SL</text></svg>
+          <span>Smartlead</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#1C1C1C"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="#FFD600" font-family="Arial,sans-serif" font-weight="800" font-size="12">C</text></svg>
+          <span>Close</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#C8202C"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="13">Z</text></svg>
+          <span>Zoho</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#1A1A2E"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="#818cf8" font-family="Arial,sans-serif" font-weight="800" font-size="12">A</text></svg>
+          <span>Attio</span>
+        </div>
+
+        <!-- DUPLICATE SET for seamless loop -->
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#FF7A59"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="9">HS</text></svg>
+          <span>HubSpot</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#FF4A00"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="13">Z</text></svg>
+          <span>Zapier</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#0A66C2"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="10">in</text></svg>
+          <span>LinkedIn Ads</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#0082FB"/><text x="12" y="13" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="400" font-size="16">∞</text></svg>
+          <span>Meta Ads</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="white"/><text x="7" y="12" dominant-baseline="central" fill="#4285F4" font-family="Arial,sans-serif" font-weight="800" font-size="11">G</text><text x="13" y="12" dominant-baseline="central" fill="#EA4335" font-family="Arial,sans-serif" font-weight="800" font-size="11">o</text></svg>
+          <span>Google Ads</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#7C3AED"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="12">A</text></svg>
+          <span>Apollo</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#6D2EFA"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="10">M</text></svg>
+          <span>Make</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#4F6EF7"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="13">I</text></svg>
+          <span>Instantly</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#059669"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="9">SL</text></svg>
+          <span>Smartlead</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#1C1C1C"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="#FFD600" font-family="Arial,sans-serif" font-weight="800" font-size="12">C</text></svg>
+          <span>Close</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#C8202C"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="13">Z</text></svg>
+          <span>Zoho</span>
+        </div>
+
+        <div class="brand-chip">
+          <svg width="24" height="24" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#1A1A2E"/><text x="12" y="12" dominant-baseline="central" text-anchor="middle" fill="#818cf8" font-family="Arial,sans-serif" font-weight="800" font-size="12">A</text></svg>
+          <span>Attio</span>
+        </div>
+
+      </div>
+    </div>
 
     <a href="https://app.churnaut.com/register" class="works-cta">Try now ↗</a>
   </div>
@@ -275,18 +381,20 @@
   /* Works-with bar */
   .works-with-bar {
     position: absolute;
-    bottom: 44px;
+    bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 20px;
     background: rgba(255,255,255,0.03);
     border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 100px;
-    padding: 10px 10px 10px 24px;
-    white-space: nowrap;
+    border-radius: 20px;
+    padding: 11px 11px 11px 24px;
+    width: calc(100vw - 80px);
+    max-width: 1080px;
+    overflow: hidden;
   }
 
   .works-label {
@@ -295,46 +403,51 @@
     letter-spacing: 0.18em;
     color: rgba(255,255,255,0.3);
     text-transform: uppercase;
-  }
-
-  .works-brand {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .brand-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
+    white-space: nowrap;
     flex-shrink: 0;
   }
 
-  .hubspot    { background: #ff7a59; color: white; }
-  .instantly  { background: #4f6ef7; color: white; }
-  .apollo     { background: #7c3aed; color: white; }
-  .smartlead  { background: #059669; color: white; font-size: 8px; }
-
-  .brand-name {
-    font-size: 13px;
-    font-weight: 400;
-    color: rgba(255,255,255,0.65);
+  .marquee-clip {
+    flex: 1;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
   }
 
-  .works-stat {
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    color: rgba(255,255,255,0.35);
-    text-transform: uppercase;
-    padding-left: 8px;
-    border-left: 1px solid rgba(255,255,255,0.08);
+  .marquee-track {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    width: max-content;
+    animation: scroll-brands 38s linear infinite;
+  }
+
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes scroll-brands {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  .brand-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .brand-chip span {
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    white-space: nowrap;
+  }
+
+  .brand-chip svg {
+    flex-shrink: 0;
+    border-radius: 5px;
   }
 
   .works-cta {
@@ -349,19 +462,20 @@
     font-weight: 500;
     text-decoration: none;
     transition: opacity 0.2s;
+    flex-shrink: 0;
     margin-left: 4px;
   }
 
   .works-cta:hover { opacity: 0.85; }
 
   @media (max-width: 768px) {
-    h1 { font-size: 40px; }
+    h1 { font-size: 38px; }
     .works-with-bar {
-      bottom: 24px;
-      gap: 14px;
-      padding: 8px 8px 8px 16px;
+      bottom: 20px;
+      width: calc(100vw - 32px);
+      padding: 10px 10px 10px 16px;
+      gap: 12px;
     }
-    .works-brand:nth-child(n+4) { display: none; }
-    .works-stat { display: none; }
+    .works-label { display: none; }
   }
 </style>
