@@ -9,16 +9,16 @@
     const startTime = Date.now();
 
     const spheres = [
-      { ox: 0.50, oy: 0.52, r: 88,  type: 'main',   phase: 0.0 },
-      { ox: 0.22, oy: 0.43, r: 28,  type: 'small',  phase: 0.5 },
-      { ox: 0.35, oy: 0.30, r: 18,  type: 'small',  phase: 1.2 },
-      { ox: 0.72, oy: 0.46, r: 22,  type: 'small',  phase: 2.1 },
-      { ox: 0.63, oy: 0.35, r: 14,  type: 'small',  phase: 3.0 },
-      { ox: 0.14, oy: 0.58, r: 38,  type: 'medium', phase: 1.8 },
-      { ox: 0.82, oy: 0.60, r: 20,  type: 'small',  phase: 4.2 },
-      { ox: 0.88, oy: 0.36, r: 16,  type: 'small',  phase: 2.7 },
-      { ox: 0.57, oy: 0.42, r: 10,  type: 'tiny',   phase: 0.9 },
-      { ox: 0.42, oy: 0.37, r: 8,   type: 'tiny',   phase: 3.5 },
+      { ox: 0.50, oy: 0.65, r: 88,  type: 'main',   phase: 0.0 },
+      { ox: 0.18, oy: 0.42, r: 52,  type: 'small',  phase: 0.5 },
+      { ox: 0.34, oy: 0.28, r: 32,  type: 'small',  phase: 1.2 },
+      { ox: 0.74, oy: 0.44, r: 44,  type: 'small',  phase: 2.1 },
+      { ox: 0.65, oy: 0.30, r: 24,  type: 'small',  phase: 3.0 },
+      { ox: 0.10, oy: 0.62, r: 62,  type: 'medium', phase: 1.8 },
+      { ox: 0.84, oy: 0.62, r: 38,  type: 'small',  phase: 4.2 },
+      { ox: 0.90, oy: 0.34, r: 28,  type: 'small',  phase: 2.7 },
+      { ox: 0.58, oy: 0.55, r: 18,  type: 'tiny',   phase: 0.9 },
+      { ox: 0.40, oy: 0.72, r: 14,  type: 'tiny',   phase: 3.5 },
     ];
 
     function resize() {
@@ -145,10 +145,7 @@
       Deterministic personalization + Scout AI
     </div>
 
-    <h1>
-      Your CRM knows<br>who they are.<br>
-      Your website<br class="mobile-only"> should too.
-    </h1>
+    <h1>Your CRM knows who they are. Your website should too.</h1>
 
     <p class="hero-sub">
       Deterministic personalization
@@ -196,7 +193,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding-top: 148px;
+    padding-top: 120px;
     overflow: hidden;
   }
 
@@ -249,7 +246,7 @@
   }
 
   h1 {
-    font-size: clamp(48px, 6.5vw, 92px);
+    font-size: clamp(36px, 3.8vw, 64px);
     font-weight: 800;
     line-height: 1.03;
     letter-spacing: -0.03em;
@@ -257,9 +254,7 @@
     margin-bottom: 24px;
   }
 
-  .mobile-only {
-    display: none;
-  }
+  /* removed */
 
   .hero-sub {
     display: flex;
@@ -361,7 +356,6 @@
 
   @media (max-width: 768px) {
     h1 { font-size: 40px; }
-    .mobile-only { display: block; }
     .works-with-bar {
       bottom: 24px;
       gap: 14px;
