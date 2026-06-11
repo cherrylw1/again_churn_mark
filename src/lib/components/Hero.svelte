@@ -1,9 +1,6 @@
 <script>
   import { onMount } from 'svelte';
   import * as THREE from 'three';
-  import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-  import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-  import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
   let canvas;
 
@@ -16,29 +13,17 @@
     camera.position.set(0, 2.5, 20);
     camera.lookAt(0, -3, 0);
 
-    // No alpha — set clear color to match page bg so bloom works
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    // alpha: true — page background shows through, no gray
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(w, h);
-    renderer.setClearColor(0x0a0a0a, 1);
-
-    // Bloom post-processing — this is what makes the orb glow
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(w, h),
-      0.38,
-      0.42,
-      0.72
-    );
-    composer.addPass(bloomPass);
 
     // LIGHTS
-    scene.add(new THREE.AmbientLight(0xffffff, 0.08));
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.15));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
     keyLight.position.set(-4, 10, 8);
     scene.add(keyLight);
-    const fillLight = new THREE.DirectionalLight(0x9b9dff, 0.45);
+    const fillLight = new THREE.DirectionalLight(0x9b9dff, 0.5);
     fillLight.position.set(5, -2, -5);
     scene.add(fillLight);
 
@@ -46,10 +31,7 @@
     const SEG = 28;
     const planeGeo = new THREE.PlaneGeometry(46, 26, SEG, SEG);
     const planeMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.062,
+      color: 0xffffff, wireframe: true, transparent: true, opacity: 0.07,
     });
     const plane = new THREE.Mesh(planeGeo, planeMat);
     plane.rotation.x = -Math.PI * 0.36;
@@ -64,44 +46,59 @@
       origZ[i] = posAttr.getZ(i);
     }
 
-    // MAIN ORB — high emissive so bloom picks it up dramatically
-    const orbGeo = new THREE.SphereGeometry(2.5, 64, 64);
-    const orbMat = new THREE.MeshStandardMaterial({
-      color: new THREE.Color(0xd0d4ff),
-      emissive: new THREE.Color(0x4f46e5),
-      emissiveIntensity: 0.90,
-      roughness: 0.04,
-      metalness: 0.0,
-    });
-    const mainOrb = new THREE.Mesh(orbGeo, orbMat);
-    mainOrb.position.set(0, -5.5, 1);
-    scene.add(mainOrb);
-    const orbLight = new THREE.PointLight(0x6366f1, 7, 20);
-    mainOrb.add(orbLight);
+    // MAIN ORB — manual glow using concentric transparent spheres
+    const orbGroup = new THREE.Group();
+    orbGroup.position.set(0, -5.5, 1);
+    scene.add(orbGroup);
 
-    // GRAY SPHERES
+    // Outer atmospheric glow
+    const glowOuter = new THREE.Mesh(
+      new THREE.SphereGeometry(5.5, 32, 32),
+      new THREE.MeshBasicMaterial({ color: 0x4338ca, transparent: true, opacity: 0.06, side: THREE.BackSide })
+    );
+    orbGroup.add(glowOuter);
+
+    // Mid glow
+    const glowMid = new THREE.Mesh(
+      new THREE.SphereGeometry(3.8, 32, 32),
+      new THREE.MeshBasicMaterial({ color: 0x6366f1, transparent: true, opacity: 0.10, side: THREE.BackSide })
+    );
+    orbGroup.add(glowMid);
+
+    // Orb surface
+    const orbMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(2.5, 64, 64),
+      new THREE.MeshStandardMaterial({
+        color: 0xa5b4fc,
+        emissive: new THREE.Color(0x4f46e5),
+        emissiveIntensity: 0.55,
+        roughness: 0.08,
+        metalness: 0.0,
+      })
+    );
+    orbGroup.add(orbMesh);
+
+    // Point light inside orb illuminates nearby spheres
+    orbGroup.add(new THREE.PointLight(0x6366f1, 9, 24));
+
+    // GRAY SPHERES — ALL below Y = -2 so they never overlap text
     const grayMat = new THREE.MeshStandardMaterial({
-      color: 0xc8cad8,
-      roughness: 0.16,
-      metalness: 0.02,
+      color: 0xc0c2d4, roughness: 0.18, metalness: 0.02,
     });
     const graySphereData = [
-      { p: [-8.0, -1.0, -1.0], r: 1.22 },
-      { p: [-4.8,  1.5, -3.5], r: 0.66 },
-      { p: [ 7.5, -1.5, -2.0], r: 1.02 },
-      { p: [ 5.8,  1.0, -4.5], r: 0.50 },
-      { p: [-11.5,-2.0, -1.5], r: 1.50 },
-      { p: [ 10.0,-3.0, -2.5], r: 0.88 },
-      { p: [ 11.5,-0.5, -4.5], r: 0.44 },
-      { p: [-1.5, -1.0, -0.5], r: 0.33 },
-      { p: [ 2.5, -7.5,  0.5], r: 0.27 },
-      { p: [-5.5, -4.5, -1.0], r: 0.60 },
+      { p: [-8.5, -3.5, -1.0], r: 1.22 },
+      { p: [-5.0, -2.2, -3.5], r: 0.66 },
+      { p: [ 7.8, -2.5, -2.0], r: 1.02 },
+      { p: [ 5.8, -2.2, -4.5], r: 0.50 },
+      { p: [-12.0,-3.2, -1.5], r: 1.50 },
+      { p: [ 10.5,-4.0, -2.5], r: 0.88 },
+      { p: [ 11.8,-2.0, -4.5], r: 0.44 },
+      { p: [-1.5, -3.2, -0.5], r: 0.33 },
+      { p: [ 2.5, -8.0,  0.5], r: 0.27 },
+      { p: [-5.5, -5.5, -1.0], r: 0.60 },
     ];
     const grayMeshes = graySphereData.map(({ p, r }) => {
-      const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(r, 32, 32),
-        grayMat.clone()
-      );
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 32), grayMat.clone());
       mesh.position.set(p[0], p[1], p[2]);
       scene.add(mesh);
       return { mesh, base: [...p] };
@@ -110,7 +107,6 @@
     // MOUSE TRACKING
     let mouseX = 0, mouseY = 0;
     let smoothX = 0, smoothY = 0;
-
     function onMouseMove(e) {
       mouseX = (e.clientX / w) - 0.5;
       mouseY = (e.clientY / h) - 0.5;
@@ -128,33 +124,39 @@
       // Wave mesh
       for (let i = 0; i < posAttr.count; i++) {
         const x = origX[i], z = origZ[i];
-        const y = Math.sin(x * 0.32 + t * 0.52) * 0.55
-                + Math.cos(z * 0.26 + t * 0.40) * 0.40
-                + Math.sin((x + z) * 0.18 + t * 0.35) * 0.26;
-        posAttr.setY(i, y);
+        posAttr.setY(i,
+          Math.sin(x * 0.32 + t * 0.52) * 0.55 +
+          Math.cos(z * 0.26 + t * 0.40) * 0.40 +
+          Math.sin((x + z) * 0.18 + t * 0.35) * 0.26
+        );
       }
       posAttr.needsUpdate = true;
 
       // Smooth mouse lerp
-      smoothX += (mouseX - smoothX) * 0.05;
-      smoothY += (mouseY - smoothY) * 0.05;
+      smoothX += (mouseX - smoothX) * 0.04;
+      smoothY += (mouseY - smoothY) * 0.04;
 
-      // Camera parallax — entire scene shifts with mouse
-      camera.position.x = smoothX * 5;
-      camera.position.y = 2.5 - smoothY * 2.5;
+      // Camera parallax — strong, feels like real depth
+      camera.position.x = smoothX * 7;
+      camera.position.y = 2.5 - smoothY * 3.5;
       camera.lookAt(0, -3, 0);
 
-      // Orb float
-      mainOrb.position.y = -5.5 + Math.sin(t * 0.30) * 0.22;
-      mainOrb.position.x = smoothX * 1.5 + Math.sin(t * 0.20) * 0.15;
+      // Scene tilts with mouse — this is the interactive feel
+      scene.rotation.y = smoothX * 0.14;
+      scene.rotation.x = -smoothY * 0.07;
 
+      // Orb floats + follows mouse subtly
+      orbGroup.position.y = -5.5 + Math.sin(t * 0.30) * 0.25;
+      orbGroup.position.x = smoothX * 1.8 + Math.sin(t * 0.22) * 0.18;
+
+      // Float spheres
       grayMeshes.forEach(({ mesh, base }, i) => {
         const ph = i * 0.92;
         mesh.position.x = base[0] + Math.sin(t * 0.26 + ph) * 0.35;
         mesh.position.y = base[1] + Math.cos(t * 0.21 + ph * 1.3) * 0.28;
       });
 
-      composer.render();
+      renderer.render(scene, camera);
     }
     animate();
 
@@ -164,8 +166,6 @@
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
-      composer.setSize(w, h);
-      bloomPass.setSize(w, h);
     }
     window.addEventListener('resize', onResize);
 
