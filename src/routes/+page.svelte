@@ -1,3 +1,7 @@
-<main>
-  <p style="color: white; padding: 40px;">Churnaut — Phase 0 complete</p>
-</main>
+<script>
+  import Nav from '$lib/components/Nav.svelte';
+  import Hero from '$lib/components/Hero.svelte';
+</script>
+
+<Nav />
+<Hero />
