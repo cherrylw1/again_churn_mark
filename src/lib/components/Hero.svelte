@@ -7,18 +7,20 @@
     const ctx = canvas.getContext('2d');
     let animId;
     const startTime = Date.now();
+    const COLS = 22;
+    const ROWS = 12;
 
     const spheres = [
-      { ox: 0.50, oy: 0.65, r: 88,  type: 'main',   phase: 0.0 },
-      { ox: 0.18, oy: 0.42, r: 52,  type: 'small',  phase: 0.5 },
-      { ox: 0.34, oy: 0.28, r: 32,  type: 'small',  phase: 1.2 },
-      { ox: 0.74, oy: 0.44, r: 44,  type: 'small',  phase: 2.1 },
-      { ox: 0.65, oy: 0.30, r: 24,  type: 'small',  phase: 3.0 },
-      { ox: 0.10, oy: 0.62, r: 62,  type: 'medium', phase: 1.8 },
-      { ox: 0.84, oy: 0.62, r: 38,  type: 'small',  phase: 4.2 },
-      { ox: 0.90, oy: 0.34, r: 28,  type: 'small',  phase: 2.7 },
-      { ox: 0.58, oy: 0.55, r: 18,  type: 'tiny',   phase: 0.9 },
-      { ox: 0.40, oy: 0.72, r: 14,  type: 'tiny',   phase: 3.5 },
+      { ox: 0.50, oy: 0.63, r: 132, type: 'main', phase: 0.0 },
+      { ox: 0.17, oy: 0.41, r: 62,  type: 'gray', phase: 0.5 },
+      { ox: 0.33, oy: 0.26, r: 38,  type: 'gray', phase: 1.2 },
+      { ox: 0.76, oy: 0.42, r: 50,  type: 'gray', phase: 2.1 },
+      { ox: 0.64, oy: 0.27, r: 28,  type: 'gray', phase: 3.0 },
+      { ox: 0.07, oy: 0.60, r: 72,  type: 'gray', phase: 1.8 },
+      { ox: 0.86, oy: 0.57, r: 44,  type: 'gray', phase: 4.2 },
+      { ox: 0.92, oy: 0.31, r: 24,  type: 'gray', phase: 2.7 },
+      { ox: 0.60, oy: 0.51, r: 16,  type: 'gray', phase: 0.9 },
+      { ox: 0.38, oy: 0.71, r: 13,  type: 'gray', phase: 3.5 },
     ];
 
     function resize() {
@@ -26,88 +28,147 @@
       canvas.height = window.innerHeight;
     }
 
-    function drawMesh(t, w, h) {
+    function buildGrid(t, w, h) {
       const cx = w * 0.5;
+      const orbX = spheres[0].ox * w;
+      const orbY = spheres[0].oy * h;
+      const pts = [];
+      for (let j = 0; j <= ROWS; j++) {
+        pts[j] = [];
+        const rp = j / ROWS;
+        const persp = 0.22 + rp * 0.78;
+        for (let i = 0; i <= COLS; i++) {
+          const baseX = (w / COLS) * i;
+          const px = cx + (baseX - cx) * persp;
+          const baseY = h * 0.10 + rp * h * 0.82;
+          const amp = 5 + rp * 10;
+          const wy = Math.sin(t * 0.00048 + i * 0.38 + j * 0.52) * amp
+                   + Math.cos(t * 0.00033 + i * 0.55 - j * 0.41 + 1.1) * amp * 0.6;
+          const wx = Math.sin(t * 0.00041 + j * 0.44 + i * 0.28) * amp * 0.25;
+          const dx = orbX - px;
+          const dy = orbY - baseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const pull = Math.max(0, 1 - dist / (w * 0.32)) * 20;
+          const ang = Math.atan2(dy, dx);
+          pts[j][i] = {
+            x: px + wx + Math.cos(ang) * pull,
+            y: baseY + wy + Math.sin(ang) * pull
+          };
+        }
+      }
+      return pts;
+    }
+
+    function drawMesh(t, w, h) {
+      const pts = buildGrid(t, w, h);
+      const orbX = spheres[0].ox * w;
+      const orbY = spheres[0].oy * h;
       ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.055)';
       ctx.lineWidth = 1;
 
-      const cols = 18;
-      for (let i = 0; i <= cols; i++) {
-        const x = (w / cols) * i;
-        const tx = cx + (x - cx) * 0.22;
-        const ty = h * 0.92;
+      for (let j = 0; j <= ROWS; j++) {
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(tx, ty);
+        ctx.moveTo(pts[j][0].x, pts[j][0].y);
+        for (let i = 1; i <= COLS; i++) ctx.lineTo(pts[j][i].x, pts[j][i].y);
+        const midDist = Math.hypot(pts[j][Math.floor(COLS/2)].x - orbX, pts[j][Math.floor(ROWS/2)].y - orbY);
+        const b = Math.min(0.09, Math.max(0.028, 0.08 - midDist / (w * 4.5)));
+        ctx.strokeStyle = `rgba(255,255,255,${b})`;
         ctx.stroke();
       }
 
-      const rows = 10;
-      for (let j = 0; j <= rows; j++) {
-        const progress = j / rows;
-        const y = h * 0.18 + progress * h * 0.68;
-        const spread = 0.28 + progress * 0.72;
+      for (let i = 0; i <= COLS; i++) {
         ctx.beginPath();
-        ctx.moveTo(cx - cx * spread, y);
-        ctx.lineTo(cx + cx * spread, y);
+        ctx.moveTo(pts[0][i].x, pts[0][i].y);
+        for (let j = 1; j <= ROWS; j++) ctx.lineTo(pts[j][i].x, pts[j][i].y);
+        ctx.strokeStyle = 'rgba(255,255,255,0.038)';
         ctx.stroke();
       }
 
-      for (let i = 1; i < cols; i += 3) {
-        for (let j = 1; j < rows; j += 2) {
-          const progress = j / rows;
-          const spread = 0.28 + progress * 0.72;
-          const segW = (cx * spread * 2) / cols;
-          const x = cx - cx * spread + segW * i;
-          const y = h * 0.18 + progress * h * 0.68;
-          const pulse = (Math.sin(t * 0.001 + i * 0.72 + j * 1.31) + 1) * 0.5;
-          if (pulse > 0.72) {
-            ctx.globalAlpha = (pulse - 0.72) * 3 * 0.7;
-            ctx.fillStyle = 'rgba(255,255,255,1)';
+      for (let i = 1; i < COLS; i += 2) {
+        for (let j = 1; j < ROWS; j += 2) {
+          const pulse = (Math.sin(t * 0.00085 + i * 0.88 + j * 1.18) + 1) * 0.5;
+          if (pulse > 0.70) {
+            ctx.globalAlpha = (pulse - 0.70) * 3.3 * 0.6;
+            ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.arc(pts[j][i].x, pts[j][i].y, 1.8, 0, Math.PI * 2);
             ctx.fill();
           }
         }
       }
-
       ctx.globalAlpha = 1;
       ctx.restore();
     }
 
     function drawSphere(s, t, w, h) {
-      const ox = Math.sin(t * 0.00035 + s.phase) * 24;
-      const oy = Math.cos(t * 0.00028 + s.phase * 1.3) * 16;
-      const px = s.ox * w + ox;
-      const py = s.oy * h + oy;
+      const fx = Math.sin(t * 0.00035 + s.phase) * 22;
+      const fy = Math.cos(t * 0.00028 + s.phase * 1.3) * 14;
+      const px = s.ox * w + fx;
+      const py = s.oy * h + fy;
 
       if (s.type === 'main') {
-        let grd = ctx.createRadialGradient(px, py, 0, px, py, s.r * 1.9);
-        grd.addColorStop(0, 'rgba(99,102,241,0.18)');
+        let grd = ctx.createRadialGradient(px, py, 0, px, py, s.r * 3.8);
+        grd.addColorStop(0,   'rgba(99,102,241,0.20)');
+        grd.addColorStop(0.38,'rgba(79,70,229,0.07)');
+        grd.addColorStop(1,   'rgba(49,46,129,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(px, py, s.r * 3.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        grd = ctx.createRadialGradient(px, py, s.r * 0.55, px, py, s.r * 1.55);
+        grd.addColorStop(0, 'rgba(129,140,248,0.13)');
         grd.addColorStop(1, 'rgba(99,102,241,0)');
         ctx.fillStyle = grd;
         ctx.beginPath();
-        ctx.arc(px, py, s.r * 1.9, 0, Math.PI * 2);
+        ctx.arc(px, py, s.r * 1.55, 0, Math.PI * 2);
         ctx.fill();
 
-        grd = ctx.createRadialGradient(px - s.r * 0.3, py - s.r * 0.3, s.r * 0.04, px, py, s.r);
-        grd.addColorStop(0,    'rgba(190,193,255,0.96)');
-        grd.addColorStop(0.35, 'rgba(129,140,248,0.88)');
-        grd.addColorStop(0.72, 'rgba(79,70,229,0.55)');
-        grd.addColorStop(1,    'rgba(49,46,129,0.15)');
+        grd = ctx.createRadialGradient(
+          px - s.r * 0.26, py - s.r * 0.26, s.r * 0.04,
+          px + s.r * 0.12, py + s.r * 0.12, s.r
+        );
+        grd.addColorStop(0,    'rgba(218,222,255,1)');
+        grd.addColorStop(0.22, 'rgba(165,172,255,0.97)');
+        grd.addColorStop(0.50, 'rgba(99,102,241,0.82)');
+        grd.addColorStop(0.78, 'rgba(67,56,202,0.52)');
+        grd.addColorStop(1,    'rgba(30,27,75,0.18)');
         ctx.fillStyle = grd;
         ctx.beginPath();
         ctx.arc(px, py, s.r, 0, Math.PI * 2);
         ctx.fill();
+
+        const hx = px - s.r * 0.31;
+        const hy = py - s.r * 0.31;
+        grd = ctx.createRadialGradient(hx, hy, 0, hx, hy, s.r * 0.50);
+        grd.addColorStop(0,    'rgba(255,255,255,0.70)');
+        grd.addColorStop(0.38, 'rgba(220,225,255,0.22)');
+        grd.addColorStop(1,    'rgba(255,255,255,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(px, py, s.r, 0, Math.PI * 2);
+        ctx.fill();
+
       } else {
-        const grd = ctx.createRadialGradient(
-          px - s.r * 0.25, py - s.r * 0.25, s.r * 0.04,
-          px, py, s.r
+        let grd = ctx.createRadialGradient(
+          px - s.r * 0.22, py - s.r * 0.22, s.r * 0.04,
+          px + s.r * 0.14, py + s.r * 0.14, s.r
         );
-        grd.addColorStop(0, 'rgba(215,215,225,0.75)');
-        grd.addColorStop(0.5, 'rgba(130,130,150,0.42)');
-        grd.addColorStop(1, 'rgba(60,60,80,0)');
+        grd.addColorStop(0,    'rgba(212,214,224,0.80)');
+        grd.addColorStop(0.42, 'rgba(148,151,168,0.52)');
+        grd.addColorStop(0.76, 'rgba(72,75,92,0.28)');
+        grd.addColorStop(1,    'rgba(18,20,32,0)');
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(px, py, s.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        const hx = px - s.r * 0.27;
+        const hy = py - s.r * 0.27;
+        grd = ctx.createRadialGradient(hx, hy, 0, hx, hy, s.r * 0.46);
+        grd.addColorStop(0,   'rgba(255,255,255,0.45)');
+        grd.addColorStop(0.5, 'rgba(255,255,255,0.10)');
+        grd.addColorStop(1,   'rgba(255,255,255,0)');
         ctx.fillStyle = grd;
         ctx.beginPath();
         ctx.arc(px, py, s.r, 0, Math.PI * 2);
@@ -120,8 +181,9 @@
       const w = canvas.width;
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
+      spheres.filter(s => s.type !== 'main').forEach(s => drawSphere(s, t, w, h));
       drawMesh(t, w, h);
-      spheres.forEach(s => drawSphere(s, t, w, h));
+      drawSphere(spheres[0], t, w, h);
       animId = requestAnimationFrame(draw);
     }
 
