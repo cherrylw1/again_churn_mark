@@ -14,7 +14,7 @@
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(52, w / h, 0.1, 100);
     camera.position.set(0, 2.5, 20);
-    camera.lookAt(0, 0, 0);
+    camera.lookAt(0, -3, 0);
 
     // No alpha — set clear color to match page bg so bloom works
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -27,9 +27,9 @@
     composer.addPass(new RenderPass(scene, camera));
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(w, h),
-      1.8,   // strength
-      0.55,  // radius
-      0.42   // threshold — orb emissive will be well above this
+      0.38,
+      0.42,
+      0.72
     );
     composer.addPass(bloomPass);
 
@@ -69,12 +69,12 @@
     const orbMat = new THREE.MeshStandardMaterial({
       color: new THREE.Color(0xd0d4ff),
       emissive: new THREE.Color(0x4f46e5),
-      emissiveIntensity: 2.4,
+      emissiveIntensity: 0.90,
       roughness: 0.04,
       metalness: 0.0,
     });
     const mainOrb = new THREE.Mesh(orbGeo, orbMat);
-    mainOrb.position.set(0, -1, 1);
+    mainOrb.position.set(0, -5.5, 1);
     scene.add(mainOrb);
     const orbLight = new THREE.PointLight(0x6366f1, 7, 20);
     mainOrb.add(orbLight);
@@ -86,16 +86,16 @@
       metalness: 0.02,
     });
     const graySphereData = [
-      { p: [-7.8,  2.5, -1.0], r: 1.22 },
-      { p: [-4.5,  5.2, -3.5], r: 0.66 },
-      { p: [ 7.5,  2.0, -2.0], r: 1.02 },
-      { p: [ 5.5,  4.5, -4.5], r: 0.50 },
-      { p: [-11.5, 0.5, -1.5], r: 1.50 },
-      { p: [ 10.0,-0.5, -2.5], r: 0.88 },
-      { p: [ 11.5, 3.0, -4.5], r: 0.44 },
-      { p: [-1.2,  4.2, -0.5], r: 0.33 },
-      { p: [ 2.5, -3.2,  0.5], r: 0.27 },
-      { p: [-5.5, -2.5, -1.0], r: 0.60 },
+      { p: [-8.0, -1.0, -1.0], r: 1.22 },
+      { p: [-4.8,  1.5, -3.5], r: 0.66 },
+      { p: [ 7.5, -1.5, -2.0], r: 1.02 },
+      { p: [ 5.8,  1.0, -4.5], r: 0.50 },
+      { p: [-11.5,-2.0, -1.5], r: 1.50 },
+      { p: [ 10.0,-3.0, -2.5], r: 0.88 },
+      { p: [ 11.5,-0.5, -4.5], r: 0.44 },
+      { p: [-1.5, -1.0, -0.5], r: 0.33 },
+      { p: [ 2.5, -7.5,  0.5], r: 0.27 },
+      { p: [-5.5, -4.5, -1.0], r: 0.60 },
     ];
     const grayMeshes = graySphereData.map(({ p, r }) => {
       const mesh = new THREE.Mesh(
@@ -106,6 +106,16 @@
       scene.add(mesh);
       return { mesh, base: [...p] };
     });
+
+    // MOUSE TRACKING
+    let mouseX = 0, mouseY = 0;
+    let smoothX = 0, smoothY = 0;
+
+    function onMouseMove(e) {
+      mouseX = (e.clientX / w) - 0.5;
+      mouseY = (e.clientY / h) - 0.5;
+    }
+    window.addEventListener('mousemove', onMouseMove);
 
     // ANIMATION
     let animId;
@@ -125,8 +135,18 @@
       }
       posAttr.needsUpdate = true;
 
-      mainOrb.position.y = -1 + Math.sin(t * 0.30) * 0.22;
-      mainOrb.position.x = Math.sin(t * 0.20) * 0.15;
+      // Smooth mouse lerp
+      smoothX += (mouseX - smoothX) * 0.05;
+      smoothY += (mouseY - smoothY) * 0.05;
+
+      // Camera parallax — entire scene shifts with mouse
+      camera.position.x = smoothX * 5;
+      camera.position.y = 2.5 - smoothY * 2.5;
+      camera.lookAt(0, -3, 0);
+
+      // Orb float
+      mainOrb.position.y = -5.5 + Math.sin(t * 0.30) * 0.22;
+      mainOrb.position.x = smoothX * 1.5 + Math.sin(t * 0.20) * 0.15;
 
       grayMeshes.forEach(({ mesh, base }, i) => {
         const ph = i * 0.92;
@@ -152,6 +172,7 @@
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('mousemove', onMouseMove);
       renderer.dispose();
     };
   });
