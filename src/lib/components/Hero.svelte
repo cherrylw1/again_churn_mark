@@ -1,199 +1,143 @@
 <script>
   import { onMount } from 'svelte';
+  import * as THREE from 'three';
 
   let canvas;
 
   onMount(() => {
-    const ctx = canvas.getContext('2d');
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    // Scene + Camera
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(52, w / h, 0.1, 100);
+    camera.position.set(0, 3, 20);
+    camera.lookAt(0, 0, 0);
+
+    // Renderer — transparent so page bg shows through
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(w, h);
+    renderer.setClearColor(0x000000, 0);
+
+    // LIGHTS
+    scene.add(new THREE.AmbientLight(0xffffff, 0.10));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
+    keyLight.position.set(-5, 9, 7);
+    scene.add(keyLight);
+    const rimLight = new THREE.DirectionalLight(0x818cf8, 0.35);
+    rimLight.position.set(6, -3, -5);
+    scene.add(rimLight);
+
+    // MESH GRID
+    const SEG = 24;
+    const planeGeo = new THREE.PlaneGeometry(42, 24, SEG, SEG);
+    const planeMat = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.058,
+    });
+    const plane = new THREE.Mesh(planeGeo, planeMat);
+    plane.rotation.x = -Math.PI * 0.36;
+    plane.position.set(0, -5, -3);
+    scene.add(plane);
+
+    const posAttr = planeGeo.attributes.position;
+    const origX = new Float32Array(posAttr.count);
+    const origZ = new Float32Array(posAttr.count);
+    for (let i = 0; i < posAttr.count; i++) {
+      origX[i] = posAttr.getX(i);
+      origZ[i] = posAttr.getZ(i);
+    }
+
+    // MAIN ORB
+    const orbGeo = new THREE.SphereGeometry(2.4, 64, 64);
+    const orbMat = new THREE.MeshStandardMaterial({
+      color: 0x9095f8,
+      emissive: new THREE.Color(0x4338ca),
+      emissiveIntensity: 0.28,
+      roughness: 0.12,
+      metalness: 0.06,
+    });
+    const mainOrb = new THREE.Mesh(orbGeo, orbMat);
+    mainOrb.position.set(0, -0.5, 1.5);
+    scene.add(mainOrb);
+    const orbGlow = new THREE.PointLight(0x6366f1, 5, 16);
+    mainOrb.add(orbGlow);
+
+    // GRAY SPHERES
+    const grayMat = new THREE.MeshStandardMaterial({
+      color: 0xb2b4c4,
+      roughness: 0.22,
+      metalness: 0.04,
+    });
+    const graySphereData = [
+      { p: [-7.8,  2.2, -1.0], r: 1.15 },
+      { p: [-4.8,  5.0, -3.5], r: 0.62 },
+      { p: [ 7.5,  1.8, -2.0], r: 0.95 },
+      { p: [ 5.8,  4.2, -4.5], r: 0.46 },
+      { p: [-11.0, 0.2, -1.5], r: 1.42 },
+      { p: [ 9.8, -0.5, -2.5], r: 0.82 },
+      { p: [ 11.0, 2.8, -4.5], r: 0.40 },
+      { p: [-1.0,  4.0, -0.5], r: 0.30 },
+      { p: [ 2.8, -2.8,  0.5], r: 0.24 },
+      { p: [-5.5, -2.5, -1.0], r: 0.55 },
+    ];
+    const grayMeshes = graySphereData.map(({ p, r }) => {
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 32), grayMat.clone());
+      mesh.position.set(p[0], p[1], p[2]);
+      scene.add(mesh);
+      return { mesh, base: [...p] };
+    });
+
+    // ANIMATION
     let animId;
     const startTime = Date.now();
-    const COLS = 22;
-    const ROWS = 12;
 
-    const spheres = [
-      { ox: 0.50, oy: 0.63, r: 132, type: 'main', phase: 0.0 },
-      { ox: 0.17, oy: 0.41, r: 62,  type: 'gray', phase: 0.5 },
-      { ox: 0.33, oy: 0.26, r: 38,  type: 'gray', phase: 1.2 },
-      { ox: 0.76, oy: 0.42, r: 50,  type: 'gray', phase: 2.1 },
-      { ox: 0.64, oy: 0.27, r: 28,  type: 'gray', phase: 3.0 },
-      { ox: 0.07, oy: 0.60, r: 72,  type: 'gray', phase: 1.8 },
-      { ox: 0.86, oy: 0.57, r: 44,  type: 'gray', phase: 4.2 },
-      { ox: 0.92, oy: 0.31, r: 24,  type: 'gray', phase: 2.7 },
-      { ox: 0.60, oy: 0.51, r: 16,  type: 'gray', phase: 0.9 },
-      { ox: 0.38, oy: 0.71, r: 13,  type: 'gray', phase: 3.5 },
-    ];
+    function animate() {
+      animId = requestAnimationFrame(animate);
+      const t = (Date.now() - startTime) * 0.001;
 
-    function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-
-    function buildGrid(t, w, h) {
-      const cx = w * 0.5;
-      const orbX = spheres[0].ox * w;
-      const orbY = spheres[0].oy * h;
-      const pts = [];
-      for (let j = 0; j <= ROWS; j++) {
-        pts[j] = [];
-        const rp = j / ROWS;
-        const persp = 0.22 + rp * 0.78;
-        for (let i = 0; i <= COLS; i++) {
-          const baseX = (w / COLS) * i;
-          const px = cx + (baseX - cx) * persp;
-          const baseY = h * 0.10 + rp * h * 0.82;
-          const amp = 5 + rp * 10;
-          const wy = Math.sin(t * 0.00048 + i * 0.38 + j * 0.52) * amp
-                   + Math.cos(t * 0.00033 + i * 0.55 - j * 0.41 + 1.1) * amp * 0.6;
-          const wx = Math.sin(t * 0.00041 + j * 0.44 + i * 0.28) * amp * 0.25;
-          const dx = orbX - px;
-          const dy = orbY - baseY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const pull = Math.max(0, 1 - dist / (w * 0.32)) * 20;
-          const ang = Math.atan2(dy, dx);
-          pts[j][i] = {
-            x: px + wx + Math.cos(ang) * pull,
-            y: baseY + wy + Math.sin(ang) * pull
-          };
-        }
+      // Wave displacement on mesh vertices
+      for (let i = 0; i < posAttr.count; i++) {
+        const x = origX[i];
+        const z = origZ[i];
+        const y = Math.sin(x * 0.32 + t * 0.52) * 0.52
+                + Math.cos(z * 0.26 + t * 0.40) * 0.38
+                + Math.sin((x + z) * 0.18 + t * 0.35) * 0.24;
+        posAttr.setY(i, y);
       }
-      return pts;
+      posAttr.needsUpdate = true;
+
+      // Float main orb
+      mainOrb.position.y = -0.5 + Math.sin(t * 0.30) * 0.20;
+      mainOrb.position.x = Math.sin(t * 0.20) * 0.14;
+
+      // Float gray spheres
+      grayMeshes.forEach(({ mesh, base }, i) => {
+        const ph = i * 0.92;
+        mesh.position.x = base[0] + Math.sin(t * 0.26 + ph) * 0.32;
+        mesh.position.y = base[1] + Math.cos(t * 0.21 + ph * 1.3) * 0.26;
+      });
+
+      renderer.render(scene, camera);
     }
+    animate();
 
-    function drawMesh(t, w, h) {
-      const pts = buildGrid(t, w, h);
-      const orbX = spheres[0].ox * w;
-      const orbY = spheres[0].oy * h;
-      ctx.save();
-      ctx.lineWidth = 1;
-
-      for (let j = 0; j <= ROWS; j++) {
-        ctx.beginPath();
-        ctx.moveTo(pts[j][0].x, pts[j][0].y);
-        for (let i = 1; i <= COLS; i++) ctx.lineTo(pts[j][i].x, pts[j][i].y);
-        const midDist = Math.hypot(pts[j][Math.floor(COLS/2)].x - orbX, pts[j][Math.floor(ROWS/2)].y - orbY);
-        const b = Math.min(0.09, Math.max(0.028, 0.08 - midDist / (w * 4.5)));
-        ctx.strokeStyle = `rgba(255,255,255,${b})`;
-        ctx.stroke();
-      }
-
-      for (let i = 0; i <= COLS; i++) {
-        ctx.beginPath();
-        ctx.moveTo(pts[0][i].x, pts[0][i].y);
-        for (let j = 1; j <= ROWS; j++) ctx.lineTo(pts[j][i].x, pts[j][i].y);
-        ctx.strokeStyle = 'rgba(255,255,255,0.038)';
-        ctx.stroke();
-      }
-
-      for (let i = 1; i < COLS; i += 2) {
-        for (let j = 1; j < ROWS; j += 2) {
-          const pulse = (Math.sin(t * 0.00085 + i * 0.88 + j * 1.18) + 1) * 0.5;
-          if (pulse > 0.70) {
-            ctx.globalAlpha = (pulse - 0.70) * 3.3 * 0.6;
-            ctx.fillStyle = 'white';
-            ctx.beginPath();
-            ctx.arc(pts[j][i].x, pts[j][i].y, 1.8, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      }
-      ctx.globalAlpha = 1;
-      ctx.restore();
+    function onResize() {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
     }
-
-    function drawSphere(s, t, w, h) {
-      const fx = Math.sin(t * 0.00035 + s.phase) * 22;
-      const fy = Math.cos(t * 0.00028 + s.phase * 1.3) * 14;
-      const px = s.ox * w + fx;
-      const py = s.oy * h + fy;
-
-      if (s.type === 'main') {
-        let grd = ctx.createRadialGradient(px, py, 0, px, py, s.r * 3.8);
-        grd.addColorStop(0,   'rgba(99,102,241,0.20)');
-        grd.addColorStop(0.38,'rgba(79,70,229,0.07)');
-        grd.addColorStop(1,   'rgba(49,46,129,0)');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(px, py, s.r * 3.8, 0, Math.PI * 2);
-        ctx.fill();
-
-        grd = ctx.createRadialGradient(px, py, s.r * 0.55, px, py, s.r * 1.55);
-        grd.addColorStop(0, 'rgba(129,140,248,0.13)');
-        grd.addColorStop(1, 'rgba(99,102,241,0)');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(px, py, s.r * 1.55, 0, Math.PI * 2);
-        ctx.fill();
-
-        grd = ctx.createRadialGradient(
-          px - s.r * 0.26, py - s.r * 0.26, s.r * 0.04,
-          px + s.r * 0.12, py + s.r * 0.12, s.r
-        );
-        grd.addColorStop(0,    'rgba(218,222,255,1)');
-        grd.addColorStop(0.22, 'rgba(165,172,255,0.97)');
-        grd.addColorStop(0.50, 'rgba(99,102,241,0.82)');
-        grd.addColorStop(0.78, 'rgba(67,56,202,0.52)');
-        grd.addColorStop(1,    'rgba(30,27,75,0.18)');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(px, py, s.r, 0, Math.PI * 2);
-        ctx.fill();
-
-        const hx = px - s.r * 0.31;
-        const hy = py - s.r * 0.31;
-        grd = ctx.createRadialGradient(hx, hy, 0, hx, hy, s.r * 0.50);
-        grd.addColorStop(0,    'rgba(255,255,255,0.70)');
-        grd.addColorStop(0.38, 'rgba(220,225,255,0.22)');
-        grd.addColorStop(1,    'rgba(255,255,255,0)');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(px, py, s.r, 0, Math.PI * 2);
-        ctx.fill();
-
-      } else {
-        let grd = ctx.createRadialGradient(
-          px - s.r * 0.22, py - s.r * 0.22, s.r * 0.04,
-          px + s.r * 0.14, py + s.r * 0.14, s.r
-        );
-        grd.addColorStop(0,    'rgba(212,214,224,0.80)');
-        grd.addColorStop(0.42, 'rgba(148,151,168,0.52)');
-        grd.addColorStop(0.76, 'rgba(72,75,92,0.28)');
-        grd.addColorStop(1,    'rgba(18,20,32,0)');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(px, py, s.r, 0, Math.PI * 2);
-        ctx.fill();
-
-        const hx = px - s.r * 0.27;
-        const hy = py - s.r * 0.27;
-        grd = ctx.createRadialGradient(hx, hy, 0, hx, hy, s.r * 0.46);
-        grd.addColorStop(0,   'rgba(255,255,255,0.45)');
-        grd.addColorStop(0.5, 'rgba(255,255,255,0.10)');
-        grd.addColorStop(1,   'rgba(255,255,255,0)');
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(px, py, s.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-
-    function draw() {
-      const t = Date.now() - startTime;
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
-      spheres.filter(s => s.type !== 'main').forEach(s => drawSphere(s, t, w, h));
-      drawMesh(t, w, h);
-      drawSphere(spheres[0], t, w, h);
-      animId = requestAnimationFrame(draw);
-    }
-
-    resize();
-    window.addEventListener('resize', resize);
-    draw();
+    window.addEventListener('resize', onResize);
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', resize);
+      window.removeEventListener('resize', onResize);
+      renderer.dispose();
     };
   });
 </script>
